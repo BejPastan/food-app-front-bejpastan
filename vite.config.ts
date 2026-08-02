@@ -5,6 +5,7 @@ import mkcert from 'vite-plugin-mkcert'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/',
   plugins: [vue(), mkcert()],
   resolve: {
     alias: {

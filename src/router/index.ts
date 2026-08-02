@@ -1,59 +1,51 @@
-// src/router/index.ts
-import ForgetPassword from '@/views/ForgetPassword.vue'
-import Dashboard from '@/views/Logged/Dashboard.vue'
-import RegisterConfirm from '@/views/RegisterConfirm.vue'
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
-import Register from '@/views/Register.vue'
-import ResetPassword from '@/views/ResetPassword.vue'
-import Profile from '@/views/Logged/Profile.vue'
-import Search from '@/views/Logged/Search.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
     name: 'login',
-    component: import('@/views/Login.vue'),
+    component: () => import('@/views/Login.vue'),
   },
   {
     path: '/register',
     name: 'register',
-    component: () => Register,
+    component: () => import('@/views/Register.vue'),
 
   },
   {
     path: '/registerConfirm',
     name: 'registerConfirm',
-    component: () => RegisterConfirm,
+    component: () => import('@/views/RegisterConfirm.vue'),
 
   },
   {
     path: '/forgetPassword',
     name: 'forgetPassword',
-    component: () => ForgetPassword,
+    component: () => import('@/views/ForgetPassword.vue'),
 
   },
   {
     path: '/resetPassword',
     name: 'resetPassword',
-    component: () => ResetPassword,
+    component: () => import('@/views/ResetPassword.vue'),
 
   },
   {
     path: '/dashboard',
     name: 'dashboard',
-    component: () => Dashboard,
+    component: () => import('@/views/Logged/Dashboard.vue'),
     meta: { requiresAuth: true },
   },
   {
     path: '/profile',
     name: 'profile',
-    component: () => Profile,
+    component: () => import('@/views/Logged/Profile.vue'),
     meta: { requiresAuth: true },
   },
   {
     path: '/search',
     name: 'search',
-    component: () => Search,
+    component: () => import('@/views/Logged/Search.vue'),
     meta: { requiresAuth: true },
   },
   {
