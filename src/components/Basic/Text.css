@@ -1,0 +1,84 @@
+/* ============================================
+   Text Component Typography Classes
+   ============================================ */
+
+/* --- Handwritten mode --- */
+.text-hand.title {
+  font-family: var(--font-family-hand-bold);
+  font-size: var(--font-size-hand-heading);
+}
+
+.text-hand.subtitle {
+  font-family: var(--font-family-hand-bold);
+  font-size: var(--font-size-hand-body);
+}
+
+.text-hand.body {
+  font-family: var(--font-family-hand-regular);
+  font-size: var(--font-size-hand-body);
+}
+
+.text-hand.caption {
+  font-family: var(--font-family-hand-regular);
+  font-size: var(--font-size-hand-small);
+}
+
+.text-hand.input {
+  font-family: var(--font-family-hand-regular);
+  font-size: var(--font-size-hand-small);
+}
+
+/* --- Typed mode --- */
+.text-typed.title {
+  font-family: var(--font-family-typed-bold);
+  font-size: var(--font-size-typed-heading);
+}
+
+.text-typed.subtitle {
+  font-family: var(--font-family-typed-bold);
+  font-size: var(--font-size-typed-body);
+}
+
+.text-typed.body {
+  font-family: var(--font-family-typed-regular);
+  font-size: var(--font-size-typed-body);
+}
+
+.text-typed.caption {
+  font-family: var(--font-family-typed-regular);
+  font-size: var(--font-size-typed-small);
+}
+
+.text-typed.input {
+  font-family: var(--font-family-typed-regular);
+  font-size: var(--font-size-typed-small);
+}
+
+/* --- Color variants --- */
+.text-color-prim-prim {
+  color: var(--text-prim-prim);
+}
+
+.text-color-prim-sec {
+  color: var(--text-prim-sec);
+}
+
+.text-color-sec-prim {
+  color: var(--text-sec-prim);
+}
+
+.text-color-sec-sec {
+  color: var(--text-sec-sec);
+}
+
+.text-color-paper-prim {
+  color: var(--text-paper-prim);
+}
+
+.text-color-paper-sec {
+  color: var(--text-paper-sec);
+}
+
+.text-color-warning {
+  color: var(--text-warning);
+}
