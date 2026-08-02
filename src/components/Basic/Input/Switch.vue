@@ -16,11 +16,6 @@ const emit = defineEmits<{
   (e: 'update:value', v: boolean): void
 }>()
 
-const btnHeight = computed(() => {
-  const heights = { small: 'var(--btn-height-small)', default: 'var(--btn-height-default)', large: 'var(--btn-height-large)' }
-  return heights[props.size]
-})
-
 const paddingV = computed(() => {
   const pads = { small: 'var(--btn-padding-vertical-small)', default: 'var(--btn-padding-vertical-default)', large: 'var(--btn-padding-vertical-large)' }
   return pads[props.size]

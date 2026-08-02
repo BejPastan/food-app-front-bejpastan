@@ -62,8 +62,6 @@ const selectTextStyle = computed((): TextVariants => {
   }
 })
 
-const textColorVar = computed(() => `var(--text-${selectTextStyle.value.replace('-', '-')})`)
-
 const selectButtonStyle = computed((): ButtonType => {
   if (props.toggle || props.externalControll) {
     switch (props.buttonType) {
