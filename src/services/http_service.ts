@@ -1,8 +1,8 @@
 import { logout, refreshToken } from '../models/User';
 import axios, { type InternalAxiosRequestConfig } from 'axios';
 
-// const API_BASE_URL = 'https://foodapptestv001-bhe7d9g7cxf9hke5.polandcentral-01.azurewebsites.net/api';
-const API_BASE_URL = 'https://e017-193-142-3-177.ngrok-free.app/api';
+const API_BASE_URL = 'https://foodapptestv001-bhe7d9g7cxf9hke5.polandcentral-01.azurewebsites.net/api';
+//const API_BASE_URL = 'https://e017-193-142-3-177.ngrok-free.app/api';
 
 const apiClient = axios.create({
     baseURL: API_BASE_URL,
