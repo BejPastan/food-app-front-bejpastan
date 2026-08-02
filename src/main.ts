@@ -32,6 +32,7 @@ router.beforeEach(async (to) => {
             console.error("Error during authentication check:", error);
             return { name: 'login' } // Redirect if rule fails
         }
+        
     }
   return true
 })
