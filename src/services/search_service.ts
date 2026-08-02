@@ -1,17 +1,17 @@
-import { mealService, type MealListParams } from "@/models/Meal"
-import { recipeService, type RecipeListParams } from "@/models/Recipe"
+import { mealService } from "@/models/Meal"
+import { recipeService } from "@/models/Recipe"
 
 export const SearchingItems = (search: string, selectedObjectType: string): Promise<any[]> => {
   switch(selectedObjectType) {
     case 'Recipes':
-      var params:RecipeListParams = {
+      var params:any = {
         name: search,
         page: 1,
         perPage: 10
       }
       return recipeService.getAll(params)
     case 'Meals':
-      var params: MealListParams = {
+      var params: any = {
         name: search,
         page: 1,
         perPage: 10

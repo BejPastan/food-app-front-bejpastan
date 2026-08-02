@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed } from 'vue'
 import RecipeTile from '@/components/Tiles/RecipeTile.vue'
 import Text from '@/components/Basic/Text.vue'
 import type { UserMealWithData } from '@/models/UserMeal'
