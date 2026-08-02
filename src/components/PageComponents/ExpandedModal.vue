@@ -65,7 +65,7 @@ const toggleModal = () => {
   background-color: transparent;
   height: 100vh;
   width: 100vw;
-  transform: translateY(100vh);
+  transform: translateY(150vh);
   transition: transform var(--transition-medium) ease-out;
 }
 
