@@ -10,8 +10,16 @@ import { getCurrentUserSync } from '@/models/User';
 import { userMealService, type CreateUserMeal, type UserMealListParams, type UserMealWithData } from '@/models/UserMeal';
 import { computed, onMounted, ref } from 'vue';
 
+const haveMealOrder = ref(false);
+const haveInitialDate = ref(false);
+
 onMounted(async () => {
     mealOrder.value = await getCachedMealOrder();
+    haveMealOrder.value = true;
+    if(haveInitialDate.value)
+    {
+        fetchMealsForWeek();
+    }
 });
 
 //#region Week handling
@@ -22,7 +30,11 @@ const isLoading = ref(false);
 const handleWeekChange = (start: Date, end: Date) => {
     weekStart.value = start;
     weekEnd.value = end;
-    fetchMealsForWeek();
+    haveInitialDate.value = true;
+    if(haveMealOrder.value)
+    {
+        fetchMealsForWeek();
+    }
 };
 
 const mealsForWeek = ref<MealViewData[]>([]);
