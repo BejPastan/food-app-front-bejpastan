@@ -75,12 +75,13 @@ const toggleModal = () => {
 
 /* Shadow overlay - fades in when expanded */
 .block-view {
-  position: absolute;
+  position: fixed;
+  bottom: 0;
   left: 0;
   width: 100%;
   height: 100vh;
   z-index: -1;
-  transform: translateY(-100dvh);
+  transform: translateY(-150dvh);
   background-color: rgba(0, 0, 0, 0);
   transition: translateY var(--transition-medium) ease-out, background-color var(--transition-medium) ease-out;
 }
