@@ -70,7 +70,7 @@ const toggleModal = () => {
 }
 
 .modal.expanded {
-  transform: translateY(calc(100vh - var(--modal-size)));
+  transform: translateY(calc(100dvh - var(--modal-size)));
 }
 
 /* Shadow overlay - fades in when expanded */
@@ -79,9 +79,9 @@ const toggleModal = () => {
   top: 0;
   left: 0;
   width: 100%;
-  height: 100dvh;
+  height: 100vh;
   z-index: -1;
-  transform: translateY(0vh);
+  transform: translateY(0dvh);
   background-color: rgba(0, 0, 0, 0);
   transition: translateY var(--transition-medium) ease-out, background-color var(--transition-medium) ease-out;
 }
