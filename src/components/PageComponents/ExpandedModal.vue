@@ -58,14 +58,14 @@ const toggleModal = () => {
 
 <style scoped>
 .modal {
-  position: absolute;
+  position: fixed;
   bottom: 0;
   left: 0;
   z-index: 1000;
   background-color: transparent;
   height: 100dvh;
   width: 100dvw;
-  transform: translateY(150vh);
+  transform: translateY(100dvh);
   transition: transform var(--transition-medium) ease-out;
 }
 
@@ -76,12 +76,11 @@ const toggleModal = () => {
 /* Shadow overlay - fades in when expanded */
 .block-view {
   position: absolute;
-  top: 0;
   left: 0;
   width: 100%;
   height: 100vh;
   z-index: -1;
-  transform: translateY(0dvh);
+  transform: translateY(-100dvh);
   background-color: rgba(0, 0, 0, 0);
   transition: translateY var(--transition-medium) ease-out, background-color var(--transition-medium) ease-out;
 }
