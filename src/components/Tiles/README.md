@@ -6,10 +6,10 @@ Data display tiles for food, meal, recipe, unit, and user meal entities.
 
 ```
 Tiles/
-├── FoodTile.tsx       # Food item display tile
+├── FoodTile.vue       # Food item display tile (Vue 3 SFC)
 ├── MealTile.tsx       # Meal item display tile
 ├── RecipeTile.tsx     # Recipe item display tile
-├── UnitTile.tsx       # Unit item display tile
+├── UnitTile.vue       # Unit item display tile (Vue 3 SFC)
 ├── UserMealTile.tsx   # User meal display tile
 └── UserMealList.tsx   # List of user meals
 ```
@@ -18,9 +18,9 @@ Tiles/
 
 | Component | Type | Description |
 |---|---|---|
-| FoodTile | Display | Tile for displaying a food item |
+| FoodTile | Display | Tile for displaying a food item (Vue 3 SFC) |
 | MealTile | Display | Tile for displaying a meal item (Vue 3 SFC) |
 | RecipeTile | Display | Tile for displaying a recipe item (Vue 3 SFC) |
-| UnitTile | Display | Tile for displaying a unit item (React Native) |
+| UnitTile | Display | Tile for displaying a unit item (Vue 3 SFC) |
 | UserMealTile | Display | Tile for displaying a user's meal (React Native) |
 | UserMealList | Layout | List container for user meal tiles (React Native) |

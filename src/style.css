@@ -22,7 +22,7 @@ body{
   --text-paper-prim: #000000;
   --text-paper-sec: #000000;
   --text-placeholder: #424242;
-  --text-warning: #ff0000;
+  --text-warning: #f9f9f9;
   --btn-prim: #66be13;
   --btn-sec: #3d730b;
   --btn-disabled: #cccccc;
@@ -189,7 +189,7 @@ html.dark {
     --text-paper-prim: #e0dcd0;
     --text-paper-sec: #a09880;
     --text-placeholder: #757575;
-    --text-warning: #ff5252;
+    --text-warning: #000000;
     --btn-prim: #4caf50;
     --btn-sec: #2e7d32;
     --btn-disabled: #555555;

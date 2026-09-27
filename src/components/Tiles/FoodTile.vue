@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import Text from '../Basic/Text.vue'
-import type { RecipeSimplified } from '@/models/Recipe'
+import type { Food } from '@/models/Food'
 import type { GenericTileProp } from '../Basic/Search/GenericTile'
 import './Tile.css'
 
-interface RecipeTileProps extends GenericTileProp<RecipeSimplified> {}
+interface FoodTileProps extends GenericTileProp<Food> {}
 
-const props = defineProps<RecipeTileProps>()
+const props = defineProps<FoodTileProps>()
 
 const rotation = ref(0)
 
@@ -41,7 +41,6 @@ const handleMagnetPress = (event: MouseEvent) => {
       <div class="magnet" @click="handleMagnetPress" />
     </div>
     <Text :content="data.name" type="subtitle" variant="paper-prim" mode="hand" />
-    <Text v-if="data.time != null" :content="`${data.time} min`" type="caption" variant="paper-sec" mode="hand" />
-    <Text v-if="data.portion != null" :content="`Portions: ${data.portion}`" type="caption" variant="paper-prim" mode="hand" />
+    <Text v-if="data.foodType?.name" :content="data.foodType.name" type="caption" variant="paper-sec" mode="hand" />
   </button>
 </template>

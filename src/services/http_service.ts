@@ -14,6 +14,9 @@ const apiClient = axios.create({
     
 });
 
+// These endpoints must never trigger a silent refresh or a logout, otherwise they recurse into themselves
+const SKIP_AUTH_HANDLING = ['/auth/refresh', '/auth/login', '/auth/logout'];
+
 apiClient.interceptors.response.use(
     async function onFulfilled(response) {
         return response;
@@ -23,9 +26,14 @@ apiClient.interceptors.response.use(
         const requestConfig = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
         if(axios.isAxiosError(error) && error.response?.status==401)
         {
+            const requestUrl = requestConfig.url ?? '';
+            if (SKIP_AUTH_HANDLING.some((endpoint) => requestUrl.includes(endpoint)))
+            {
+                return Promise.reject(error);
+            }
             if(requestConfig._retry)
             {
-               logout(); 
+               await logout(); 
                return Promise.reject(error);
             }
             else
@@ -36,7 +44,7 @@ apiClient.interceptors.response.use(
                     originalRequest._retry = true;
                     return apiClient(originalRequest);
                 } catch (refreshError) {
-                    logout()
+                    await logout()
                     return Promise.reject(refreshError)
                 }
             }

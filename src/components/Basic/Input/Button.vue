@@ -78,7 +78,7 @@ const selectButtonStyle = computed((): ButtonType => {
 const btnColor = computed(() => `var(--btn-${selectButtonStyle.value})`)
 const shadowColor = computed(() => `var(--bxshd-btn-${selectButtonStyle.value})`)
 
-const btnHeight = computed(() => {
+const btnMinHeight = computed(() => {
   const heights = { small: 'var(--btn-height-small)', default: 'var(--btn-height-default)', large: 'var(--btn-height-large)' }
   return heights[props.size]
 })
@@ -150,7 +150,7 @@ const handlePress = () => {
       :style="{
         backgroundColor: btnColor,
         transform: `translateY(${translateY})`,
-        height: btnHeight,
+        minHeight: btnMinHeight,
       }"
     >
       <span class="btn-content">
@@ -189,7 +189,7 @@ const handlePress = () => {
   border: none;
   background: none;
   cursor: pointer;
-  max-height: var(--btn-height-large);
+  /* No height cap: the face grows when a long label wraps (see .btn-content > .text) */
   -webkit-tap-highlight-color: transparent;
   padding-inline: 0;
   width: 100%;
@@ -230,5 +230,12 @@ const handlePress = () => {
   height: 100%;
   padding: var(--spacing-sm);
   box-sizing: border-box;
+}
+
+.btn-content > .text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  text-align: center;
+  white-space: normal;
 }
 </style>

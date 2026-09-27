@@ -33,6 +33,13 @@ export interface Food {
   foodType: FoodType;
 }
 
+export const emptyFood: Food = {
+  id: "",
+  name: '',
+  foodTypeId: '',
+  foodType: { id: '', name: '' },
+};
+
 //#region mapping functions
 export function mapFoodToCreate(food: Food): CreateFood {
   return {

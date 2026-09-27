@@ -4,6 +4,7 @@ import Text from '@/components/Basic/Text.vue'
 import type { UserMealWithData } from '@/models/UserMeal'
 import type { RecipeSimplified } from '@/models/Recipe'
 import Button from '../Basic/Input/Button.vue'
+import { computed } from 'vue'
 
 
 export interface MealViewData {
@@ -32,11 +33,17 @@ function mapUserMealsToRecipes(meal: UserMealWithData): RecipeSimplified {
 const handleAddMeal = () => {
   props.onAddMeal?.(props.mealDate, props.meal)
 }
+
+const mealDay = computed(() => {
+  const days = ['Niedziela', 'Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek', 'Sobota']
+  return days[props.mealDate.getDay()]
+})
+
 </script>
 
 <template>
   <div class="meal-view">
-    <Text :content="meal" type="subtitle" variant="prim-prim" />
+    <Text :content="`${mealDay} ${props.meal}`" type="subtitle" variant="prim-prim" />
     <div class="scroll-container">
       <RecipeTile
         v-for="(recipe, index) in props.meals"

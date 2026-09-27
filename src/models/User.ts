@@ -60,17 +60,19 @@ export interface ConfirmPasswordReset{
 
 //#region services
 let currentUser: ExtendedUser | null = null;
+let lastValidatedAt = 0;
+const AUTH_VALIDATION_TTL = 5 * 60 * 1000; // ms - revalidate /auth/me at most this often
 
 //login
 export const login = async (loginRequest: LoginRequest): Promise<ExtendedUser | null> => {
   await userService.login(loginRequest);
-  await authMe();
+  await authMe(true);
   return currentUser;
 }
 
 export const refreshToken = async (): Promise<ExtendedUser | null> => {
   await userService.refresh();
-  await authMe();
+  await authMe(true);
   return currentUser;
 }
 
@@ -87,10 +89,15 @@ export const confirmSignUp = async (signUpRequest: ConfirmSignUpRequest): Promis
 //#endregion
 
 //get current user and store in memory and local storage
-export const authMe = async (): Promise<ExtendedUser> => {
-  await getCurrentUser();
+export const authMe = async (force = false): Promise<ExtendedUser | null> => {
+  const cached = await getCurrentUser();
+  if (!force && cached != null && Date.now() - lastValidatedAt < AUTH_VALIDATION_TTL) {
+    console.log("Using cached user, skipping /auth/me");
+    return cached;
+  }
   const user = await userService.getCurrent();
   console.log("current user", user);
+  lastValidatedAt = Date.now();
   await setCurrentUser(user);
   return user;
 }
@@ -112,16 +119,20 @@ export const updateUserData = async (updateRequest: UserUpdateRequest): Promise<
 
 //logout
 export const logout = async (): Promise<void> => {
+  const hadSession = currentUser != null || (await storageService.getItem(STORAGE_KEYS.CURRENT_USER)) != null;
   currentUser = null;
-  router.push({ path: "/" });
-  var userInStorage = await getCurrentUser()
-  if(userInStorage != null)
+  lastValidatedAt = 0;
+  await storageService.deleteItem(STORAGE_KEYS.CURRENT_USER);
+  if(hadSession)
   {
     console.log("Logging out user");
-    console.log("user in storage", userInStorage);
-    await storageService.deleteItem(STORAGE_KEYS.CURRENT_USER);
-    await userService.logout();
+    try {
+      await userService.logout();
+    } catch (error) {
+      console.error("Failed to log out on the server:", error);
+    }
   }
+  router.push({ path: "/" });
 }
 
 //#endregion
@@ -139,16 +150,19 @@ export const getCurrentUserSync = (): ExtendedUser | null => {
 
 export const getCurrentUser = async (): Promise<ExtendedUser | null> => {
   if (currentUser) {
+    console.log("Returning current user from memory");
     return currentUser;
   }
   else{
     //try to get from local storage
     try {
-    const userString = await storageService.getItem('currentUser');
+      console.log("Trying to get current user from local storage");
+    const userString = await storageService.getItem(STORAGE_KEYS.CURRENT_USER);
     if (userString) {
-
+        console.log("Found current user in local storage");
         const user = JSON.parse(userString) as ExtendedUser;
         currentUser = user;
+        console.log("Returning current user from local storage");
         return user;
     }
     } catch (error) {

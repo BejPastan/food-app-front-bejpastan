@@ -5,18 +5,31 @@ import SearchableList from '@/components/Basic/Search/SearchableList.vue'
 import TabContainer from '@/components/TabContainer.vue'
 import RecipeTile from '@/components/Tiles/RecipeTile.vue'
 import MealTile from '@/components/Tiles/MealTile.vue'
+import FoodTile from '@/components/Tiles/FoodTile.vue'
+import UnitTile from '@/components/Tiles/UnitTile.vue'
 import { DebouncTime } from '@/constants/Search'
 import { SearchingItems } from '@/services/search_service'
+import Modal from '@/components/Basic/Modal.vue'
+import Button from '@/components/Basic/Input/Button.vue'
+import Text from '@/components/Basic/Text.vue'
+import { Messages } from '@/constants/Messages'
 import ExpandedModal from '@/components/PageComponents/ExpandedModal.vue'
 import MealForm from '@/components/Forms/mealForm.vue'
 import RecipeForm from '@/components/Forms/recipeForm.vue'
+import FoodForm from '@/components/Forms/foodForm.vue'
+import UnitForm from '@/components/Forms/unitForm.vue'
 import type { GenericForm } from '@/components/Forms/GenericForm'
-import { emptyRecipe } from '@/models/Recipe'
+import { emptyRecipe, recipeService } from '@/models/Recipe'
+import { mealService } from '@/models/Meal'
+import { emptyFood, foodService } from '@/models/Food'
+import { emptyUnit, unitService } from '@/models/Unit'
 
-const objectsTypes = ['Recipes', 'Meals']
+const objectsTypes = ['Recipes', 'Meals', 'Foods', 'Units']
 const tileComponents: Record<string, any> = {
   Recipes: RecipeTile,
   Meals: MealTile,
+  Foods: FoodTile,
+  Units: UnitTile,
 }
 
 const objectsTypesToOptions = objectsTypes.map((t) => ({ label: t, value: t }))
@@ -62,6 +75,10 @@ const emptyTile = computed(() => {
       return recipe
     case 'Meals':
       return { id: '', name: 'Add New Meal', order: 0 }
+    case 'Foods':
+      return { ...emptyFood, id: '', name: 'Add New Food' }
+    case 'Units':
+      return { ...emptyUnit, id: '', name: 'Add New Unit' }
     default:
       return { id: '', name: 'Add New Item' }
   }
@@ -79,6 +96,12 @@ const formVersion:GenericForm<any> = computed(() => {
 
       console.log('Form version for Meals selected')
       return markRaw(MealForm)
+    case 'Foods':
+      console.log('Form version for Foods selected')
+      return markRaw(FoodForm)
+    case 'Units':
+      console.log('Form version for Units selected')
+      return markRaw(UnitForm)
     default:
       console.warn('No form version available for selected type:', selectedObjectType.value)
       return null
@@ -105,6 +128,53 @@ const handleTilePress = (item: any) => {
   console.log('Selected item:', item)
   modalOpen.value = true
 }
+
+const deleteModalOpen = ref(false)
+const itemToDelete = ref<any | null>(null)
+
+const deleteMessage = computed(() =>
+  `${Messages.deleteConfirmation} ${itemToDelete.value?.name}?`
+)
+
+const handleDeleteItem = (item_id: string) => {
+  switch (selectedObjectType.value) {
+    case 'Recipes':
+      console.log(`Deleting recipe with ID: ${item_id}`)
+      recipeService.delete(item_id);
+      break
+    case 'Meals':
+      console.log(`Deleting meal with ID: ${item_id}`)
+      mealService.delete(item_id);
+      break
+    case 'Foods':
+      console.log(`Deleting food with ID: ${item_id}`)
+      foodService.delete(item_id);
+      break
+    case 'Units':
+      console.log(`Deleting unit with ID: ${item_id}`)
+      unitService.delete(item_id);
+      break
+    default:
+      console.warn('No delete action defined for selected type:', selectedObjectType.value)
+  }
+}
+
+const handleStartDeletingItem = (item: any) => {
+  if (item == null || !item.id) return // ignore the "Add New ..." placeholder tile
+  itemToDelete.value = item
+  deleteModalOpen.value = true
+}
+
+const handleDeleteModalClose = () => {
+  deleteModalOpen.value = false
+  itemToDelete.value = null
+}
+
+const handleDeleteConfirm = () => {
+  if (itemToDelete.value != null) handleDeleteItem(itemToDelete.value.id)
+  handleDeleteModalClose()
+}
+
 </script>
 
 <template>
@@ -121,6 +191,7 @@ const handleTilePress = (item: any) => {
       :debounceTime="DebouncTime.short"
       :isSearching="isSearching"
       :onTilePress="handleTilePress"
+      :onMagnetPress="handleStartDeletingItem"
     />
     <ExpandedModal
       :label="'Close'"
@@ -131,6 +202,18 @@ const handleTilePress = (item: any) => {
     >
       <component v-if="selectedItem != null" :is="formVersion" :onSubmit="handleModalClose" :data="selectedItem"/>
     </ExpandedModal>
+    <Modal
+      :isOpen="deleteModalOpen"
+      @close="handleDeleteModalClose"
+    >
+      <div class="delete-modal-content">
+        <Text :content="deleteMessage" type="title" variant="paper-prim" />
+        <div class="delete-modal-actions">
+          <Button label="Yes" buttonType="warning" :onPress="handleDeleteConfirm" />
+          <Button label="No" buttonType="sec" :onPress="handleDeleteModalClose" />
+        </div>
+      </div>
+    </Modal>
   </TabContainer>
 </template>
 
@@ -138,5 +221,24 @@ const handleTilePress = (item: any) => {
 .scroll-container {
   overflow-x: auto;
   height: 100%;
+}
+
+.delete-modal-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-lg);
+  height: 100%;
+  width: 100%;
+  text-align: center;
+}
+
+.delete-modal-actions {
+  display: flex;
+  flex-direction: row;
+  gap: var(--spacing-md);
+  width: 100%;
+  max-width: 320px;
 }
 </style>

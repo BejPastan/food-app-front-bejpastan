@@ -35,7 +35,7 @@ const handleMagnetPress = (event: MouseEvent) => {
 </script>
 
 <template>
-  <button class="meal-tile" :style="{ transform: `rotate(${rotation}deg)` }" @click="handlePress">
+  <button class="tile" :style="{ transform: `rotate(${rotation}deg)` }" @click="handlePress">
     <div class="magnet-container">
       <div class="magnet" @click="handleMagnetPress"/>
     </div>

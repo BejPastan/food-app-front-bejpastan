@@ -119,4 +119,11 @@ const handleRandomSelect = (payload: { recipeId: string; mealDate: Date; mealNam
   flex-direction: row;
   gap: var(--spacing-sm);
 }
+
+@media (max-width: 480px) {
+  .action-bar {
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+}
 </style>

@@ -34,6 +34,13 @@ export interface Unit {
   desc: string;
 }
 
+export const emptyUnit: Unit = {
+  id: "",
+  name: '',
+  volumeEquivalent: 0,
+  desc: '',
+};
+
 //#region mapping functions
 export function mapUnitToCreate(unit: Unit): CreateUnit {
   return {

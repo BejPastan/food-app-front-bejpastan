@@ -81,7 +81,7 @@ const toggleModal = () => {
   width: 100%;
   height: 100vh;
   z-index: -1;
-  transform: translateY(-150dvh);
+  transform: translateY(-200dvh);
   background-color: rgba(0, 0, 0, 0);
   transition: translateY var(--transition-medium) ease-out, background-color var(--transition-medium) ease-out;
 }
