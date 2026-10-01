@@ -43,6 +43,7 @@ export interface Kitchen {
   name: string;
   owner_id: string;
   updated_at: Date;
+  accessCode: string;
 }
 //#endregion
 
@@ -51,6 +52,7 @@ export const emptyKitchen: Kitchen = {
   name: '',
   owner_id: '',
   updated_at: new Date(0),
+  accessCode: '',
 };
 
 //#region mapping functions
@@ -60,6 +62,7 @@ export function mapResponseToKitchen(data: any): Kitchen {
     name: data.name,
     owner_id: data.owner_id,
     updated_at: data.updated_at ? new Date(data.updated_at) : new Date(0),
+    accessCode: data.accessCode || '',
   };
 }
 //#endregion
@@ -102,7 +105,11 @@ export const kitchenService = {
 
   update: async (id: string, data: UpdateKitchen): Promise<Kitchen> => {
     const response = await httpService.patch<Kitchen>(`/kitchen/${id}`, data);
-    return mapResponseToKitchen(response);
+    var kitchen = mapResponseToKitchen(response);
+    if(currentKitchen?.id === id) {
+      await setCurrentKitchen(kitchen);
+    }
+    return kitchen;
   },
 
   delete: async (id: string): Promise<DeleteResponse> => {

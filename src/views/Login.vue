@@ -26,6 +26,7 @@ const handleLogin = async () => {
       password: password.value,
     }
     await login(loginInput)
+    
     router.push('/dashboard')
   } catch (err) {
     console.log('Login error in component', err)//error from here

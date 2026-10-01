@@ -68,8 +68,6 @@ const AUTH_VALIDATION_TTL = 5 * 60 * 1000; // ms - revalidate /auth/me at most t
 export const login = async (loginRequest: LoginRequest): Promise<ExtendedUser | null> => {
   await userService.login(loginRequest);
   const user = await authMe(true);
-  // /auth/me no longer carries the current kitchen or its membership - they are fetched separately here:
-  // the first kitchen of the user's list becomes the current kitchen, then the membership in it becomes the current kitchen user
   if (user != null) {
     const kitchens = await getKitchens({ name: '' }, true);
     const kitchen = kitchens.length > 0 ? kitchens[0] : null;

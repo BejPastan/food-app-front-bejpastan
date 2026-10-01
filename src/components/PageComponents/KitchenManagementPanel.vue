@@ -27,6 +27,7 @@ const props = withDefaults(defineProps<{
   errorMessage?: string
   onRename?: (name: string) => void
   onRoleChange?: (userId: string, role: KitchenRoleName) => void
+  onAccessCodeChange?: (code: string) => void
 }>(), {
   currentUserId: '',
   currentRole: null,
@@ -97,6 +98,11 @@ const handleRename = (name: string) => {
   emit('rename', name)
 }
 
+const handleAccessCodeChange = (code: string) => {
+  props.onAccessCodeChange?.(code)
+  props.onAccessCodeChange?.(code)
+}
+
 const handleRoleSelect = (member: KitchenUserDetail, item: DropdownItem<KitchenRoleName>) => {
   if (!canChangeRole(member)) return
   if (item.value === kitchenRoleFromValue(member.roleName)) return
@@ -117,6 +123,13 @@ const handleRoleSelect = (member: KitchenUserDetail, item: DropdownItem<KitchenR
         :disabled="!canManage"
         :isSaving="isSaving"
         :onSave="handleRename"
+      />
+      <ToggableInput
+        :value="kitchen.accessCode"
+        placeholder="Kitchen access code"
+        :disabled="!canManage"
+        :isSaving="isSaving"
+        :onSave="handleAccessCodeChange"
       />
     </div>
 

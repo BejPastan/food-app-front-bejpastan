@@ -149,6 +149,14 @@ const handleRoleChange = async (memberUserId: string, role: KitchenRoleName) => 
   isSaving.value = false
 }
 
+const handleAccessCodeChange = (code: string) => {
+  accessCode.value = code
+  if(currentKitchen.value == null) {
+    return
+  }
+  kitchenService.update(currentKitchen.value.id, { accessCode: code })
+}
+
 //#region join kitchen
 const openJoinModal = () => {
   accessCode.value = ''
@@ -224,6 +232,7 @@ const handleJoin = async () => {
           :errorMessage="errorMessage"
           :onRename="handleRename"
           :onRoleChange="handleRoleChange"
+          :onAccessCodeChange="handleAccessCodeChange"
         />
       </template>
 
