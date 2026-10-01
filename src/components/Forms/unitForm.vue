@@ -91,7 +91,8 @@ const handleSave = async () => {
     if (currentUnit.value.id != "" && currentUnit.value.id != null) {
       await unitService.update(currentUnit.value.id, mapUnitToUpdate(currentUnit.value))
     } else {
-      await unitService.create(mapUnitToCreate(currentUnit.value))
+      const createdUnit = await unitService.create(mapUnitToCreate(currentUnit.value))
+      currentUnit.value = { ...currentUnit.value, id: createdUnit.id }
     }
     props.onSubmit?.(currentUnit.value)
   } catch (error) {

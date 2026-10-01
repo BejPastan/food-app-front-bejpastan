@@ -111,9 +111,4 @@ export const recipeService = {
     const response = await httpService.delete(`/recipes/${id}`);
     return response;
   },
-
-  getChoices: async (params?: RecipeChoicesParams): Promise<Recipe[]> => {
-    const response = await httpService.get<Recipe[]>('/recipes/choices', params || {});
-    return response;
-  }
 };

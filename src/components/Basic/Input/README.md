@@ -9,7 +9,8 @@ Input/
 ├── Input.vue          # Text input with password toggle and confirm button
 ├── Button.vue         # Pressable button with 3D press effect
 ├── ClickableText.vue  # Clickable text link
-└── Switch.vue         # Toggle switch with smooth animation
+├── Switch.vue         # Toggle switch with smooth animation
+└── ToggableInput.vue  # Input that toggles between read-only and editable
 ```
 
 ## Element Types
@@ -20,6 +21,7 @@ Input/
 | Button | Action | Button with leading/end icons, toggle mode, 3D press animation |
 | ClickableText | Action | Simple clickable text for links |
 | Switch | Action | Toggle switch with animated thumb |
+| ToggableInput | Form | Read-only input that toggles to edit mode with Save/Cancel buttons |
 
 ## Status: Vue 3 SFCs
 </arg_value>

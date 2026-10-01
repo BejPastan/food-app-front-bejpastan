@@ -146,7 +146,8 @@ const handleSave = async () => {
         name: currentFood.value.name,
         foodTypeId: currentFood.value.foodTypeId,
       }
-      await foodService.create(foodCreateData)
+      const createdFood = await foodService.create(foodCreateData)
+      currentFood.value = { ...currentFood.value, id: createdFood.id }
     }
     props.onSubmit?.(currentFood.value)
   } catch (error) {

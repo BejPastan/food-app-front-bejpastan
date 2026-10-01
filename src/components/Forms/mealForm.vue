@@ -82,7 +82,8 @@ const handleSave = async () => {
   } else {
     const mealCreateData: CreateMeal = { name: currentMeal.value.name, order: currentMeal.value.order }
     if (validateCreate(mealCreateData)) {
-      await mealService.create(mealCreateData)
+      const createdMeal = await mealService.create(mealCreateData)
+      currentMeal.value = { ...currentMeal.value, id: createdMeal.id }
       props.onSubmit?.(currentMeal.value)
     } else {
       errorMessage.value = 'Some required field are not filled'

@@ -4,7 +4,8 @@ export const ROUTES = {
   ADMIN: '/admin',
   LOGIN: '/login',
   RECIPES: '/search',
-  ACCOUNT: '/profile'
+  ACCOUNT: '/profile',
+  KITCHENS: '/kitchens'
 } as const
 
 export type ValidRoute = typeof ROUTES[keyof typeof ROUTES]
@@ -23,6 +24,10 @@ export const userNavs = [
     icon: 'book-outline'
   },
   {
+    route: ROUTES.KITCHENS,
+    icon: 'restaurant-outline'
+  },
+  {
     route: ROUTES.ACCOUNT,
     icon: 'person-outline'
   }
@@ -32,5 +37,7 @@ export const userNavs = [
 // Storage keys
 export const STORAGE_KEYS = {
   CURRENT_USER: 'currentUser',
-  ACCESS_TOKEN: 'token'
+  ACCESS_TOKEN: 'token',
+  CURRENT_KITCHEN: 'currentKitchen',
+  CURRENT_KITCHEN_USER: 'currentKitchenUser'
 }

@@ -60,6 +60,15 @@ export function mapIngredientToCreate(ingredient: Ingredient): CreateIngredient 
   };
 }
 
+export function mapIngredientToUpdate(ingredient: Pick<Ingredient, 'foodId' | 'unitId' | 'unitAmount'>): UpdateIngredient {
+  return {
+    foodId: ingredient.foodId,
+    unitId: ingredient.unitId,
+    unitAmount: ingredient.unitAmount,
+  };
+}
+
+
 //#endregion
 
 // Helper function for string representation (equivalent to ToString() in C#)

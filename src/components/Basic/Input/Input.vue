@@ -139,6 +139,7 @@ const handleBlur = () => {
   font-size: var(--font-size-typed-small);
   line-height: 1.4;
   resize: none;
+  width: 100%;
 }
 
 .input-base::placeholder {

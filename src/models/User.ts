@@ -5,6 +5,7 @@ import { STORAGE_KEYS } from '@/constants/Routes';
 import httpService from '../services/http_service';
 import { storageService } from '../services/storage_service';
 import { type SuccessResponse } from './UtilityModels';
+import { clearCurrentKitchen, getKitchens, selectKitchen } from './Kitchen';
 import { router } from '@/router';
 export type UserStatus = 'active' | 'inactive' | 'timeout';
 
@@ -66,7 +67,18 @@ const AUTH_VALIDATION_TTL = 5 * 60 * 1000; // ms - revalidate /auth/me at most t
 //login
 export const login = async (loginRequest: LoginRequest): Promise<ExtendedUser | null> => {
   await userService.login(loginRequest);
-  await authMe(true);
+  const user = await authMe(true);
+  // /auth/me no longer carries the current kitchen or its membership - they are fetched separately here:
+  // the first kitchen of the user's list becomes the current kitchen, then the membership in it becomes the current kitchen user
+  if (user != null) {
+    const kitchens = await getKitchens({ name: '' }, true);
+    const kitchen = kitchens.length > 0 ? kitchens[0] : null;
+    if (kitchen != null) {
+      await selectKitchen(kitchen, user.id);
+    } else {
+      await clearCurrentKitchen();
+    }
+  }
   return currentUser;
 }
 
@@ -92,11 +104,9 @@ export const confirmSignUp = async (signUpRequest: ConfirmSignUpRequest): Promis
 export const authMe = async (force = false): Promise<ExtendedUser | null> => {
   const cached = await getCurrentUser();
   if (!force && cached != null && Date.now() - lastValidatedAt < AUTH_VALIDATION_TTL) {
-    console.log("Using cached user, skipping /auth/me");
     return cached;
   }
   const user = await userService.getCurrent();
-  console.log("current user", user);
   lastValidatedAt = Date.now();
   await setCurrentUser(user);
   return user;
@@ -123,9 +133,9 @@ export const logout = async (): Promise<void> => {
   currentUser = null;
   lastValidatedAt = 0;
   await storageService.deleteItem(STORAGE_KEYS.CURRENT_USER);
+  await clearCurrentKitchen();
   if(hadSession)
   {
-    console.log("Logging out user");
     try {
       await userService.logout();
     } catch (error) {
@@ -143,26 +153,21 @@ export const setCurrentUser = async (user: ExtendedUser): Promise<void> => {
   currentUser = user;
   await storageService.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(user));
 }
-
 export const getCurrentUserSync = (): ExtendedUser | null => {
   return currentUser;
 }
 
 export const getCurrentUser = async (): Promise<ExtendedUser | null> => {
   if (currentUser) {
-    console.log("Returning current user from memory");
     return currentUser;
   }
   else{
     //try to get from local storage
     try {
-      console.log("Trying to get current user from local storage");
     const userString = await storageService.getItem(STORAGE_KEYS.CURRENT_USER);
     if (userString) {
-        console.log("Found current user in local storage");
         const user = JSON.parse(userString) as ExtendedUser;
         currentUser = user;
-        console.log("Returning current user from local storage");
         return user;
     }
     } catch (error) {
@@ -202,6 +207,7 @@ const userService = {
 
   getCurrent: async (): Promise<ExtendedUser> => {
     const response = await httpService.get<ExtendedUser>('/auth/me', []);
+    console.log('getCurrent response:', response);
     return response;
   },
 

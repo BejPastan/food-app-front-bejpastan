@@ -4,4 +4,13 @@ export const Messages = {
     noResultsMessage: "No results found",
     searchPlaceholder: "Search...",
     deleteConfirmation: "Are you sure you want to delete",
+    noKitchensMessage: "No kitchens to choose from",
+    kitchenPlaceholder: "Select kitchen",
+    switchKitchenHint: "Change the kitchen in the header",
+    rolePlaceholder: "Select role",
+    joinKitchenButton: "Join Kitchen",
+    joinKitchenTitle: "Join a kitchen",
+    joinKitchenPrompt: "Enter the kitchen access code to join",
+    accessCodePlaceholder: "Access code",
+    joinKitchenSuccess: "Kitchen joined successfully",
 }

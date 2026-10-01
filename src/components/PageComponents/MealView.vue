@@ -1,33 +1,42 @@
 <script setup lang="ts">
 import RecipeTile from '@/components/Tiles/RecipeTile.vue'
 import Text from '@/components/Basic/Text.vue'
-import type { UserMealWithData } from '@/models/UserMeal'
+import type { KitchenMealWithData } from '@/models/KitchenMeal'
 import type { RecipeSimplified } from '@/models/Recipe'
 import Button from '../Basic/Input/Button.vue'
 import { computed } from 'vue'
 
 
 export interface MealViewData {
-    meals: UserMealWithData[];
+    meals: KitchenMealWithData[];
     meal: string;
     mealDate: Date;
 }
 
 const props = withDefaults(defineProps<{
-  meals: UserMealWithData[]
+  meals: KitchenMealWithData[]
+  canEdit?: boolean
   meal: string
   mealDate: Date
   onAddMeal?: (date: Date, mealName: string) => void
   onRemoveMeal?: (recordid: string) => void
-}>(), {})
+}>(), { canEdit: true })
 
-function mapUserMealsToRecipes(meal: UserMealWithData): RecipeSimplified {
+function mapKitchenMealsToRecipes(meal: KitchenMealWithData): RecipeSimplified {
   return ({
     id: meal.recipeId,
     name: meal.name,
     time: meal.time,
     portion: meal.portion,
   })
+}
+
+// Removing is allowed only for members that may edit the meals of the kitchen
+function handleMagnetPress(recordId: string): void {
+  if (!props.canEdit) {
+    return
+  }
+  props.onRemoveMeal?.(recordId)
 }
 
 const handleAddMeal = () => {
@@ -48,10 +57,10 @@ const mealDay = computed(() => {
       <RecipeTile
         v-for="(recipe, index) in props.meals"
         :key="index"
-        :data="mapUserMealsToRecipes(recipe)"
-        @magnet-press="props.onRemoveMeal?.(recipe.recordId)"
+        :data="mapKitchenMealsToRecipes(recipe)"
+        @magnet-press="handleMagnetPress(recipe.recordId)"
       />
-      <div v-if="onAddMeal" class="add-meal-button">
+      <div v-if="canEdit && onAddMeal" class="add-meal-button">
         <Button  @click="handleAddMeal" :label="'+'"/>
       </div>
     </div>

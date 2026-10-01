@@ -129,6 +129,27 @@ const handleTilePress = (item: any) => {
   modalOpen.value = true
 }
 
+// Optimistic upsert: patch the local list instead of re-fetching everything
+const handleFormSubmit = (submitted: any) => {
+  if (submitted == null) {
+    handleModalClose()
+    return
+  }
+
+  const list = [...searchData.value]
+  // index 0 is the "Add New ..." placeholder tile, so only match on a real id
+  const index = submitted.id ? list.findIndex((item: any) => item.id === submitted.id) : -1
+
+  if (index >= 0) {
+    list[index] = { ...list[index], ...submitted } // edit: same position, updated data
+  } else {
+    list.push(submitted) // add (or an edit of an item outside the current page): at the end
+  }
+
+  searchData.value = list
+  handleModalClose()
+}
+
 const deleteModalOpen = ref(false)
 const itemToDelete = ref<any | null>(null)
 
@@ -136,26 +157,23 @@ const deleteMessage = computed(() =>
   `${Messages.deleteConfirmation} ${itemToDelete.value?.name}?`
 )
 
-const handleDeleteItem = (item_id: string) => {
+const handleDeleteItem = (item_id: string): Promise<any> => {
   switch (selectedObjectType.value) {
     case 'Recipes':
       console.log(`Deleting recipe with ID: ${item_id}`)
-      recipeService.delete(item_id);
-      break
+      return recipeService.delete(item_id)
     case 'Meals':
       console.log(`Deleting meal with ID: ${item_id}`)
-      mealService.delete(item_id);
-      break
+      return mealService.delete(item_id)
     case 'Foods':
       console.log(`Deleting food with ID: ${item_id}`)
-      foodService.delete(item_id);
-      break
+      return foodService.delete(item_id)
     case 'Units':
       console.log(`Deleting unit with ID: ${item_id}`)
-      unitService.delete(item_id);
-      break
+      return unitService.delete(item_id)
     default:
       console.warn('No delete action defined for selected type:', selectedObjectType.value)
+      return Promise.resolve()
   }
 }
 
@@ -170,9 +188,20 @@ const handleDeleteModalClose = () => {
   itemToDelete.value = null
 }
 
-const handleDeleteConfirm = () => {
-  if (itemToDelete.value != null) handleDeleteItem(itemToDelete.value.id)
+const handleDeleteConfirm = async () => {
+  const item = itemToDelete.value
+  if (item == null) return
+
+  const previousList = searchData.value
+  searchData.value = previousList.filter((i: any) => i.id !== item.id) // remove right away
   handleDeleteModalClose()
+
+  try {
+    await handleDeleteItem(item.id)
+  } catch (error) {
+    console.error('Failed to delete item:', error)
+    searchData.value = previousList // roll back so the list matches the server again
+  }
 }
 
 </script>
@@ -200,7 +229,7 @@ const handleDeleteConfirm = () => {
       @close="handleModalClose"
       :external-controlled="true"
     >
-      <component v-if="selectedItem != null" :is="formVersion" :onSubmit="handleModalClose" :data="selectedItem"/>
+      <component v-if="selectedItem != null" :is="formVersion" :onSubmit="handleFormSubmit" :data="selectedItem"/>
     </ExpandedModal>
     <Modal
       :isOpen="deleteModalOpen"

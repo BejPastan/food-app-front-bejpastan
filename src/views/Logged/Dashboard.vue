@@ -7,20 +7,68 @@ import MealView, { type MealViewData } from '@/components/PageComponents/MealVie
 import TabContainer from '@/components/TabContainer.vue';
 import { getCachedMealOrder, getCachedMeals, getCachedMealsSync } from '@/models/Meal';
 import { getCurrentUserSync } from '@/models/User';
-import { userMealService, type CreateUserMeal, type UserMealListParams, type UserMealWithData } from '@/models/UserMeal';
-import { computed, onMounted, ref } from 'vue';
+import { getCurrentKitchenRoleSync, getCurrentKitchenSync, initKitchen, subscribeCurrentKitchen } from '@/models/Kitchen';
+import { kitchenMealService, type CreateKitchenMeal, type KitchenMealListParams, type KitchenMealWithData } from '@/models/KitchenMeal';
+import { hasKitchenRoleAtLeast } from '@/models/KitchenRole';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 const haveMealOrder = ref(false);
 const haveInitialDate = ref(false);
+const haveKitchen = ref(false);
+
+// Roles that may change the meals of the kitchen ('inspector' is read only)
+const canEditMeals = ref(false);
+
+const refreshMealPermissions = () => {
+    var role = getCurrentKitchenRoleSync();
+    console.log("Current kitchen role:", role);
+    canEditMeals.value = hasKitchenRoleAtLeast(role, 'editor');
+};
+
+const allReady = () => haveMealOrder.value && haveInitialDate.value && haveKitchen.value;
 
 onMounted(async () => {
     mealOrder.value = await getCachedMealOrder();
     haveMealOrder.value = true;
-    if(haveInitialDate.value)
+
+    var userId = getCurrentUserSync()?.id;
+    if(userId != null)
+    {
+        await initKitchen(userId);
+    }
+    haveKitchen.value = getCurrentKitchenSync() != null;
+    refreshMealPermissions();
+
+    unsubscribeKitchen = subscribeCurrentKitchen(handleKitchenChange);
+
+    if(allReady())
     {
         fetchMealsForWeek();
     }
 });
+
+onUnmounted(() => {
+    unsubscribeKitchen?.();
+    unsubscribeKitchen = null;
+});
+
+//#region Current kitchen (selected in the header KitchenSelector)
+let unsubscribeKitchen: (() => void) | null = null;
+let lastFetchedKitchenId = '';
+
+// The header re-selects the stored kitchen when it refreshes, so the id is compared to avoid loading the same week twice
+const handleKitchenChange = () => {
+    refreshMealPermissions();
+
+    var kitchenId = getCurrentKitchenSync()?.id ?? '';
+    haveKitchen.value = kitchenId !== '';
+    if(kitchenId === lastFetchedKitchenId || !allReady())
+    {
+        return;
+    }
+    fetchMealsForWeek();
+};
+//#endregion
 
 //#region Week handling
 const weekStart = ref(new Date());
@@ -31,7 +79,7 @@ const handleWeekChange = (start: Date, end: Date) => {
     weekStart.value = start;
     weekEnd.value = end;
     haveInitialDate.value = true;
-    if(haveMealOrder.value)
+    if(allReady())
     {
         fetchMealsForWeek();
     }
@@ -46,51 +94,62 @@ const bucketsNum = computed(() => {
 });
 
 const fetchMealsForWeek = async () => {
-    // Fetch meals for the given week from the API or store
+    // Fetch the meals planned in the kitchen selected in the header for the given week
+    var kitchen = getCurrentKitchenSync();
+    if(kitchen == null)
+    {
+        mealsForWeek.value = [];
+        return;
+    }
+
     isLoading.value = true;
+    lastFetchedKitchenId = kitchen.id;
 
-    var userId = getCurrentUserSync()?.id;
-
-    var params:UserMealListParams = {
-        userId: userId,
-        startDate: weekStart.value,
-        endDate: weekEnd.value
-    }
-    var userMeals = await userMealService.getAll(params);
-
-    console.log("Fetched meals for week:", userMeals);
-
-    //sort meals by meal order
-    var mealNum = mealOrder.value.size;
-    var mealBuckets: UserMealWithData[][] = new Array(bucketsNum.value).fill(0).map(() => []);
-
-    for(var i=0; i<userMeals.length; i++)
+    try
     {
-        var mealorderId = mealOrder.value.get(userMeals[i].meal)??mealNum;
-        var dayIndex = userMeals[i].mealDate.getDay();
-        var bucketIndex = mealNum * (dayIndex-1) + mealorderId;
-        console.log("Placing meal", userMeals[i], "in bucket", bucketIndex);
-        console.log("mealBucket length:", mealBuckets.length);
-        mealBuckets[bucketIndex].push(userMeals[i]);
-    }
-
-    console.log("Meal buckets:", mealBuckets);
-
-    var data: MealViewData[] = [];
-    for(var i=0; i<bucketsNum.value; i++)
-    {
-        var mealIndex = i % mealNum;
-        var dayIndex = Math.floor(i / mealNum);
-        var mealData:MealViewData = {
-            meals: mealBuckets[i],
-            meal: Array.from(mealOrder.value.keys())[mealIndex] ?? '',
-            mealDate: new Date(weekStart.value.getTime() + dayIndex * 24 * 60 * 60 * 1000)
+        var params:KitchenMealListParams = {
+            kitchenId: kitchen.id,
+            startDate: weekStart.value,
+            endDate: weekEnd.value
         }
-        data.push(mealData);
+        var kitchenMeals = await kitchenMealService.getAll(params);
+
+        console.log("Fetched meals for week:", kitchenMeals);
+
+        //sort meals by meal order
+        var mealNum = mealOrder.value.size;
+        var mealBuckets: KitchenMealWithData[][] = new Array(bucketsNum.value).fill(0).map(() => []);
+
+        for(var i=0; i<kitchenMeals.length; i++)
+        {
+            var mealorderId = mealOrder.value.get(kitchenMeals[i].meal)??mealNum;
+            var dayIndex = kitchenMeals[i].mealDate.getDay();
+            var bucketIndex = mealNum * ((dayIndex+6)%7) + mealorderId;
+            mealBuckets[bucketIndex].push(kitchenMeals[i]);
+        }
+
+        var data: MealViewData[] = [];
+        for(var i=0; i<bucketsNum.value; i++)
+        {
+            var mealIndex = i % mealNum;
+            var dayIndex = Math.floor(i / mealNum);
+            var mealData:MealViewData = {
+                meals: mealBuckets[i],
+                meal: Array.from(mealOrder.value.keys())[mealIndex] ?? '',
+                mealDate: new Date(weekStart.value.getTime() + dayIndex * 24 * 60 * 60 * 1000)
+            }
+            data.push(mealData);
+        }
+        mealsForWeek.value = data
     }
-    console.log("Meals for week:", data);
-    mealsForWeek.value = data
-    isLoading.value = false;
+    catch(error)
+    {
+        console.error("Failed to load the meals of the kitchen:", error);
+    }
+    finally
+    {
+        isLoading.value = false;
+    }
 };
 //#endregion
 
@@ -118,8 +177,20 @@ const handleCloseAddMealModal = () => {
 };
 
 const handleRemoveMeal = async (recordId: string) => {
-    console.log("Removing meal with recordId:", recordId);
-    await userMealService.delete(recordId);
+    var kitchen = getCurrentKitchenSync();
+    if(kitchen == null || !canEditMeals.value)
+    {
+        return;
+    }
+    try
+    {
+        await kitchenMealService.delete(kitchen.id, recordId);
+    }
+    catch(error)
+    {
+        console.error("Failed to remove the meal:", error);
+        return;
+    }
     fetchMealsForWeek(); // Refresh the meals for the week after removing
 };
 
@@ -127,15 +198,29 @@ const handleSaveMeal = async (payload:{recipeId:string, mealDate: Date, mealName
     // Save the meal to the database or store
     console.log("Saving meal:", payload.recipeId, payload.mealDate, payload.mealName);
     handleCloseAddMealModal();
+
+    var kitchen = getCurrentKitchenSync();
+    if(kitchen == null || !canEditMeals.value)
+    {
+        return;
+    }
     
     var meals = await getCachedMeals();
 
-    var params:CreateUserMeal = {
+    var params:CreateKitchenMeal = {
         recipeId: payload.recipeId,
         mealId: meals.find(m => m.name === payload.mealName)?.id ?? "",
         mealDate: payload.mealDate,
     }
-    await userMealService.create(params);
+    try
+    {
+        await kitchenMealService.create(kitchen.id, params);
+    }
+    catch(error)
+    {
+        console.error("Failed to add the meal to the kitchen:", error);
+        return;
+    }
     fetchMealsForWeek(); // Refresh the meals for the week after saving
 };
 
@@ -154,6 +239,7 @@ const handleSaveMeal = async (payload:{recipeId:string, mealDate: Date, mealName
                     :meals="recipesForDay.meals"
                     :meal="recipesForDay.meal"
                     :meal-date="recipesForDay.mealDate"
+                    :can-edit="canEditMeals"
                     @add-meal="handleAddMeal"
                     @remove-meal="handleRemoveMeal"
                 />

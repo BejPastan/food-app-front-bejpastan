@@ -2,8 +2,10 @@
 import { ref, onMounted } from 'vue'
 import RecipeTile from '@/components/Tiles/RecipeTile.vue'
 import LoadingIndicator from '@/components/Basic/LoadingIndicator.vue'
-import { recipeService, type Recipe } from '@/models/Recipe'
 import type { RecipeSimplified } from '@/models/Recipe'
+import { kitchenMealService } from '@/models/KitchenMeal'
+import type { KitchenMealChoicesParams } from '@/models/KitchenMeal'
+import { getCurrentKitchenSync } from '@/models/Kitchen'
 
 const props = withDefaults(defineProps<{
   mealId: string
@@ -15,13 +17,18 @@ const emit = defineEmits<{
   (e: 'select', payload: { recipeId: string; mealDate: Date; mealName: string }): void
 }>()
 
-const choices = ref<Recipe[]>([])
+const choices = ref<RecipeSimplified[]>([])
 const isLoading = ref(false)
 
 onMounted(async () => {
   isLoading.value = true
   try {
-    choices.value = await recipeService.getChoices({ mealId: props.mealId })
+    let choicesParams:KitchenMealChoicesParams = {
+      mealId: props.mealId,
+      excludeWeeks: 3
+    };
+
+    choices.value = await kitchenMealService.getChoices(getCurrentKitchenSync()?.id || '',choicesParams)
   } catch (error) {
     console.error('Failed to load choices:', error)
   }
