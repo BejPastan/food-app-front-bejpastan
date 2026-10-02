@@ -1,7 +1,7 @@
 import { logout, refreshToken } from '../models/User';
 import axios, { type InternalAxiosRequestConfig } from 'axios';
 
-const API_BASE_URL = 'https://foodapp-r79n.onrender.com/api';
+const API_BASE_URL = 'https://food-app-bejsment-studio.alwaysdata.net/api';
 //const API_BASE_URL = 'http://localhost:32770/api';
 const apiClient = axios.create({
     baseURL: API_BASE_URL,
