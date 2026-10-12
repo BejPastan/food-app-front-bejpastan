@@ -104,9 +104,9 @@ body{
   --font-family-hand-bold: 'Caveat-Bold', cursive;
 
   /* Typography — Typed */
-  --font-size-typed-small: 16px;
-  --font-size-typed-body: 20px;
-  --font-size-typed-heading: 28px;
+  --font-size-typed-small: 12px;
+  --font-size-typed-body: 16px;
+  --font-size-typed-heading: 24px;
   --font-family-typed-regular: 'CourierPrime-Regular', monospace;
   --font-family-typed-bold: 'CourierPrime-Bold', monospace;
 
@@ -148,6 +148,9 @@ body{
   --font-size-hand-small: 8px;
   --font-size-hand-body: 12px;
   --font-size-hand-heading: 16px;
+    --font-size-typed-small: 8px;
+  --font-size-typed-body: 12px;
+  --font-size-typed-heading: 16px;
   }
 }
 
