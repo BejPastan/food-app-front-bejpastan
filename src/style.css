@@ -97,9 +97,9 @@ body{
   --loading-size-large: 64px;
 
   /* Typography — Handwritten */
-  --font-size-hand-small: 24px;
-  --font-size-hand-body: 32px;
-  --font-size-hand-heading: 48px;
+  --font-size-hand-small: 12px;
+  --font-size-hand-body: 16px;
+  --font-size-hand-heading: 24px;
   --font-family-hand-regular: 'Caveat-Regular', cursive;
   --font-family-hand-bold: 'Caveat-Bold', cursive;
 
@@ -145,9 +145,9 @@ body{
   --btn-lrg: calc(var(--btn-height-large) + var(--btn-shadow-released-large));
 
   @media (max-width: 1024px) {
-  --font-size-hand-small: 12px;
-  --font-size-hand-body: 16px;
-  --font-size-hand-heading: 24px;
+  --font-size-hand-small: 8px;
+  --font-size-hand-body: 12px;
+  --font-size-hand-heading: 16px;
   }
 }
 
