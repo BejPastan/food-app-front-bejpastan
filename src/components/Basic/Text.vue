@@ -35,4 +35,19 @@ const modeClass = computed(() => `text-${props.mode}`)
   margin: 0;
   line-height: 1.4;
 }
+.title{
+  font-size: var(--font-size-hand-heading);
+}
+.subtitle{
+  font-size: var(--font-size-hand-heading);
+}
+.body{
+  font-size: var(--font-size-hand-body);
+}
+.caption{
+  font-size: var(--font-size-hand-small);
+}
+.input{
+  font-size: var(--font-size-hand-body);
+}
 </style>
