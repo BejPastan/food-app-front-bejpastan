@@ -42,6 +42,7 @@ onMounted(() => {
 const handleModalClose = () => {
   console.log('Modal closed')
   modalOpen.value = false
+  selectedItem.value = null // Reset selected item when modal closes
 }
 
 const handleModalOpen = () => {

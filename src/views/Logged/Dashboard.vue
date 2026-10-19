@@ -114,8 +114,6 @@ const fetchMealsForWeek = async () => {
         }
         var kitchenMeals = await kitchenMealService.getAll(params);
 
-        console.log("Fetched meals for week:", kitchenMeals);
-
         //sort meals by meal order
         var mealNum = mealOrder.value.size;
         var mealBuckets: KitchenMealWithData[][] = new Array(bucketsNum.value).fill(0).map(() => []);
@@ -221,7 +219,9 @@ const handleSaveMeal = async (payload:{recipeId:string, mealDate: Date, mealName
         console.error("Failed to add the meal to the kitchen:", error);
         return;
     }
-    fetchMealsForWeek(); // Refresh the meals for the week after saving
+    //optimistic update of the mealsForWeek array, to avoid reloading the whole week
+
+    //fetchMealsForWeek(); // Refresh the meals for the week after saving
 };
 
 
