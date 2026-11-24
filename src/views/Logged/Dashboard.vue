@@ -5,7 +5,7 @@ import ExpandedModal from '@/components/PageComponents/ExpandedModal.vue';
 import MealSelector from '@/components/PageComponents/MealSelector.vue';
 import MealView, { type MealViewData } from '@/components/PageComponents/MealView.vue';
 import TabContainer from '@/components/TabContainer.vue';
-import { getCachedMealOrder, getCachedMeals, getCachedMealsSync } from '@/models/Meal';
+import { getCachedMealOrder, getCachedMealsSync } from '@/models/Meal';
 import { getCurrentUserSync } from '@/models/User';
 import { getCurrentKitchenRoleSync, getCurrentKitchenSync, initKitchen, subscribeCurrentKitchen } from '@/models/Kitchen';
 import { kitchenMealService, type CreateKitchenMeal, type KitchenMealListParams, type KitchenMealWithData } from '@/models/KitchenMeal';
@@ -59,7 +59,7 @@ let lastFetchedKitchenId = '';
 // The header re-selects the stored kitchen when it refreshes, so the id is compared to avoid loading the same week twice
 const handleKitchenChange = () => {
     refreshMealPermissions();
-
+    initialLoad.value = true;
     var kitchenId = getCurrentKitchenSync()?.id ?? '';
     haveKitchen.value = kitchenId !== '';
     if(kitchenId === lastFetchedKitchenId || !allReady())
@@ -74,11 +74,13 @@ const handleKitchenChange = () => {
 const weekStart = ref(new Date());
 const weekEnd = ref(new Date());
 const isLoading = ref(false);
+const initialLoad = ref(true);
 
 const handleWeekChange = (start: Date, end: Date) => {
     weekStart.value = start;
     weekEnd.value = end;
     haveInitialDate.value = true;
+    initialLoad.value = true;
     if(allReady())
     {
         fetchMealsForWeek();
@@ -86,12 +88,18 @@ const handleWeekChange = (start: Date, end: Date) => {
 };
 
 const mealsForWeek = ref<MealViewData[]>([]);
-
 const mealOrder = ref<Map<string, number>>(new Map());
-
 const bucketsNum = computed(() => {
     return mealOrder.value.size * 7; // 7 days in a week
 });
+
+// Index of the bucket for a given meal/day, matching the layout used in fetchMealsForWeek
+const mealBucketIndex = (mealDate: Date, mealName: string): number => {
+    const mealNum = mealOrder.value.size;
+    const mealorderId = mealOrder.value.get(mealName) ?? mealNum;
+    const dayIndex = (mealDate.getDay() + 6) % 7; // Monday=0 … Sunday=6
+    return mealNum * dayIndex + mealorderId;
+};
 
 const fetchMealsForWeek = async () => {
     // Fetch the meals planned in the kitchen selected in the header for the given week
@@ -102,7 +110,9 @@ const fetchMealsForWeek = async () => {
         return;
     }
 
-    isLoading.value = true;
+
+    isLoading.value = true && initialLoad.value;
+    console.log(initialLoad.value);
     lastFetchedKitchenId = kitchen.id;
 
     try
@@ -147,6 +157,7 @@ const fetchMealsForWeek = async () => {
     finally
     {
         isLoading.value = false;
+        initialLoad.value = false;
     }
 };
 //#endregion
@@ -180,6 +191,21 @@ const handleRemoveMeal = async (recordId: string) => {
     {
         return;
     }
+
+    // Optimistic remove: patch the local list immediately
+    const previous = mealsForWeek.value.map(day => ({
+        ...day,
+        meals: [...day.meals]
+    }));
+    for(const day of mealsForWeek.value)
+    {
+        const idx = day.meals.findIndex(m => m.recordId === recordId);
+        if(idx >= 0)
+        {
+            day.meals.splice(idx, 1);
+        }
+    }
+
     try
     {
         await kitchenMealService.delete(kitchen.id, recordId);
@@ -187,12 +213,15 @@ const handleRemoveMeal = async (recordId: string) => {
     catch(error)
     {
         console.error("Failed to remove the meal:", error);
+        mealsForWeek.value = previous; // rollback on error
         return;
     }
-    fetchMealsForWeek(); // Refresh the meals for the week after removing
+
+    // Reconcile with the server in the background
+    fetchMealsForWeek();
 };
 
-const handleSaveMeal = async (payload:{recipeId:string, mealDate: Date, mealName: string}) => {
+const handleSaveMeal = async (payload:{recipeId:string, mealDate: Date, mealName: string, recipeName:string}) => {
     // Save the meal to the database or store
     console.log("Saving meal:", payload.recipeId, payload.mealDate, payload.mealName);
     handleCloseAddMealModal();
@@ -202,14 +231,39 @@ const handleSaveMeal = async (payload:{recipeId:string, mealDate: Date, mealName
     {
         return;
     }
-    
-    var meals = await getCachedMeals();
+
+    var meals = getCachedMealsSync();
 
     var params:CreateKitchenMeal = {
         recipeId: payload.recipeId,
         mealId: meals.find(m => m.name === payload.mealName)?.id ?? "",
         mealDate: payload.mealDate,
     }
+
+    // Optimistic add: patch the local list immediately
+    const previous = mealsForWeek.value.map(day => ({
+        ...day,
+        meals: [...day.meals]
+    }));
+
+    const optimisticMeal: KitchenMealWithData = {
+        recordId: `temp-${Date.now()}`,
+        recipeId: payload.recipeId,
+        name: payload.recipeName,
+        time: 0,
+        portion: 1,
+        meal: payload.mealName,
+        mealDate: payload.mealDate
+        
+    };
+
+    console.log(optimisticMeal)
+
+    const bucketIndex = mealBucketIndex(payload.mealDate, payload.mealName);
+    console.log(bucketIndex)
+    mealsForWeek.value[bucketIndex].meals.push(optimisticMeal);
+    console.log(mealsForWeek)
+
     try
     {
         await kitchenMealService.create(kitchen.id, params);
@@ -217,11 +271,11 @@ const handleSaveMeal = async (payload:{recipeId:string, mealDate: Date, mealName
     catch(error)
     {
         console.error("Failed to add the meal to the kitchen:", error);
+        mealsForWeek.value = previous; // rollback on error
         return;
     }
-    //optimistic update of the mealsForWeek array, to avoid reloading the whole week
 
-    //fetchMealsForWeek(); // Refresh the meals for the week after saving
+    fetchMealsForWeek();
 };
 
 

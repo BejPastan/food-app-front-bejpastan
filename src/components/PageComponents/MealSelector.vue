@@ -15,7 +15,7 @@ const props = withDefaults(defineProps<{
 }>(), {})
 
 const emit = defineEmits<{
-  (e: 'save', payload: { recipeId: string; mealDate: Date; mealName: string }): void
+  (e: 'save', payload: { recipeId: string; mealDate: Date; mealName: string, recipeName:string }): void
   (e: 'remove', recordid: string): void
 }>()
 
@@ -39,6 +39,7 @@ const handleSearch = async (query: string) => {
 }
 
 const handleTilePress = (item: RecipeSimplified) => {
+  console.log()
   selectedRecipe.value = item
 }
 
@@ -50,10 +51,12 @@ const saveButtonLabel = computed(() => {
 
 const handleSave = () => {
   if (selectedRecipe.value) {
+    console.log(props)
     emit('save', {
       recipeId: selectedRecipe.value.id,
       mealDate: props.mealDate,
       mealName: props.mealName,
+      recipeName:selectedRecipe.value.name
     })
   }
 }
@@ -69,7 +72,7 @@ const handleCloseSelectRandom = () => {
   openSelectRandom.value = false
 }
 
-const handleRandomSelect = (payload: { recipeId: string; mealDate: Date; mealName: string }) => {
+const handleRandomSelect = (payload: { recipeId: string; mealDate: Date; mealName: string, recipeName:string }) => {
   emit('save', payload)
   handleCloseSelectRandom()
 }

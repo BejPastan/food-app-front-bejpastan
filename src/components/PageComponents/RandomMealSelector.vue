@@ -14,7 +14,7 @@ const props = withDefaults(defineProps<{
 }>(), {})
 
 const emit = defineEmits<{
-  (e: 'select', payload: { recipeId: string; mealDate: Date; mealName: string }): void
+  (e: 'select', payload: { recipeId: string; mealDate: Date; mealName: string, recipeName:string }): void
 }>()
 
 const choices = ref<RecipeSimplified[]>([])
@@ -47,6 +47,7 @@ const handleTilePress = (item: RecipeSimplified) => {
       recipeId: item.id,
       mealDate: props.mealDate,
       mealName: props.mealName,
+      recipeName: item.name
     })
   }, 1500)
 }
